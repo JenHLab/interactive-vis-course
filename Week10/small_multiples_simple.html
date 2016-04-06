@@ -26,16 +26,19 @@ body {
 </style>
 <body>
 
-  <h2>Relative Progress on Measles 2000-2013</h2>
+  <h2>Relative African Progress on Measles 2000-2013</h2>
 
-  <p>Source: WHO. Scales differ across data series, showing curve of each country's improvement.</p>
+  <p>Source: WHO. Scales differ across each example, showing the change in each over time. This might be a little confusing, though - since the year labels look like scale values.</p>
 
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
 <script>
 
+var fullwidth = 250,
+  fullheight = 69;
+
 var margin = {top: 25, right: 10, bottom: 20, left: 40},
-    width = 250 - margin.left - margin.right,
-    height = 69 - margin.top - margin.bottom;
+    width = fullwidth - margin.left - margin.right,
+    height = fullheight - margin.top - margin.bottom;
 
 var parseDate = d3.time.format("Year %Y").parse;
 
@@ -83,20 +86,24 @@ d3.csv("data/deaths_04yearsold_excerpt.csv", typeFix, function(error, data) {
   var svg = d3.select("body").selectAll("svg")
       .data(countries)
     .enter().append("svg")
-      .attr("width", width + margin.left + margin.right)
-      .attr("height", height + margin.top + margin.bottom)
+      .attr("width", fullwidth)
+      .attr("height", fullheight)
     .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
   // Add the area path elements. Note: the y-domain is set per element.
   svg.append("path")
       .attr("class", "area")
-      .attr("d", function(d) { y.domain([0, d.maxValue]); return area(d.values); });
+      .attr("d", function(d) {
+        y.domain([0, d.maxValue]); return area(d.values);
+      });
 
   // Add the line path elements. Note: the y-domain is set per element.
   svg.append("path")
       .attr("class", "line")
-      .attr("d", function(d) { y.domain([0, d.maxValue]); return line(d.values); });
+      .attr("d", function(d) {
+        y.domain([0, d.maxValue]); return line(d.values);
+      });
 
   // Add a small label for the symbol name.
 
@@ -107,37 +114,53 @@ d3.csv("data/deaths_04yearsold_excerpt.csv", typeFix, function(error, data) {
     .attr("x", 0)
     .attr("y", -8)
     .style("text-anchor", "start")
-    .text(function(d) { return outputDate(d.values[0].date); });
+    .text(function(d) {
+      return outputDate(d.values[0].date);
+    });
 
   svg.append("text")
     .attr("class", "label")
     .attr("x", width/2)
     .attr("y", -8)
     .style("text-anchor", "middle")
-    .text(function(d) { return d.key; });
+    .text(function(d) {
+      return d.key;
+    });
 
   svg.append("text")
     .attr("class", "label")
     .attr("x", width)
     .attr("y", -8)
     .style("text-anchor", "end")
-    .text(function(d) { return outputDate(d.values[d.values.length - 1].date);});
+    .text(function(d) {
+      return outputDate(d.values[d.values.length - 1].date);
+    });
 
     // put a dot on last point
     svg.append("circle")
     .attr("class", "label")
-    .attr("cx", function(d) {return x(d.values[d.values.length - 1].date);})
-    .attr("cy", function(d) { y.domain([0, d.maxValue]); return y(d.values[d.values.length - 1].Measles);})
+    .attr("cx", function(d) {
+      return x(d.values[d.values.length - 1].date);
+    })
+    .attr("cy", function(d) {
+      y.domain([0, d.maxValue]);
+      return y(d.values[d.values.length - 1].Measles);
+    })
     .attr("r", 2);
 
     // label the value on the last point
   svg.append("text")
    .attr("class", "label")
     .attr("x", width)
-    .attr("y", function(d) { y.domain([0, d.maxValue]); return y(d.values[d.values.length - 1].Measles);})
+    .attr("y", function(d) {
+      y.domain([0, d.maxValue]);
+      return y(d.values[d.values.length - 1].Measles);
+    })
     .attr("dy", -5)
     .style("text-anchor", "end")
-    .text(function(d) { return d.values[d.values.length - 1].Measles; });
+    .text(function(d) {
+      return d.values[d.values.length - 1].Measles;
+    });
 });
 
 // this function is applied to all the data values on load!

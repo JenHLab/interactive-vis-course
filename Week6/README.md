@@ -2,26 +2,82 @@
 
 ##Homework Review
 
-###Axes issues With Bar Charts
 
-When we draw bars, we always start from 0.  If we use margin.left as our starting point, we can get screwy results if we don't subtract that from the xscale -- because it's our new 0 point.  It's as if we used a transform, translate(margin.left, margin.top) on the graph before we drew the bars.
+**Interesting scatterplots with OECD Data**:
 
-For some review of bar charts, including vertical ones with ordinal scales, see Mike Bostock's tutorial (especially part 3): http://bost.ocks.org/mike/bar/3/
+* Cibonay's: http://bl.ocks.org/cibonaydames/raw/ab01267bce3ec335db6f/
 
-TODO: Benefit of Mike's margin convention here.
+* Sherman on voter turnout: http://bl.ocks.org/SHewitt95/raw/e8a1a1384cdb617130c7/
 
-###Scatterplots
+* Josh: http://bl.ocks.org/CafeConVega/raw/17bebb8a00ee606fd4b9/
 
-How to add padding on scatterplots... see [Week5/scatter_sample.html](../Week5/scatter_sample.html), now posted.
+**Interesting Personal Scatterplots**:
+
+* Zhou: http://bl.ocks.org/captainelaine/raw/7ee56c564dcc7d67a089/
+
+* Sunny: http://bl.ocks.org/sunnyuxuan/raw/bbbf9903127eded1b26c/
+
+* Cibonay: http://bl.ocks.org/cibonaydames/raw/b423c9c0ad626f1b7ffe/
+
+* Hyan: http://bl.ocks.org/hfreitas92/raw/8baa653c36e3a3a02c1d/
+
+* Jennifer: http://bl.ocks.org/JenHLab/raw/dbe1abdadde126100c59/
+
+* Lots of dots: http://bl.ocks.org/eliot84/raw/e6846da998bb238f86d6/
+
+* Han's bubble plot: http://bl.ocks.org/jashcny/raw/7bb55a6c4034fa00dc8e/
+
+* Luying: http://bl.ocks.org/luluwuluying/raw/5e1406e59aae7886b7a3/
 
 Aside on connected dot plots... Here are some famous examples in this post by Alberto: http://www.thefunctionalart.com/2012/09/in-praise-of-connected-scatter-plots.html
+
+
+**Bar Charts**:
+
+* Sunny: http://bl.ocks.org/sunnyuxuan/raw/749349b5424cb7e2482b/
+
+
+###Scatterplot Improvements: Padding, Transparency, Log Scale?
+
+How to add padding on scatterplots... see [Week6/scatter_skeleton_fixed.html](scatter_skeleton_fixed.html), now posted.  The tip is that you can't use just the extents (max and min) of your data for the scales, but you have to add and subtract a little bit on each axes definition:
+
+````
+xScale.domain([  // make an array of the min and max minus/plus some padding:
+    d3.min(data, function(d) {
+        return +d.homicideRate;
+        }) - 2,
+    d3.max(data, function(d) {
+        return +d.homicideRate;
+        }) + 2
+    ]);
+
+yScale.domain([
+    d3.min(data, function(d) {
+        return +d.lifeSatisfaction;
+    }) - 2,
+    d3.max(data, function(d) {
+        return +d.lifeSatisfaction;
+    }) + 2
+]);
+
+````
+
+For data values all on top of each other, use a little transparency in the style sheet.
+
+````
+circle.dots {
+    fill: steelblue;
+    opacity: .7;
+}
+````
+
 
 Values all squished together on a linear scale?  Try log scales? or other? See https://github.com/mbostock/d3/wiki/Quantitative-Scales.  Let's try it: http://blockbuilder.org/arnicas/bc3ebc9d6d6d58fac9a2
 
 
-### Selections D3 Reminder!
+### Text Labels on the Bars
 
-Selections that don't collide with other elements of the same kind -- add a class to make it more specific!
+Selections that don't collide with other elements of the same kind -- add a class to make it more specific!  Position your labels using the xScale, yScale and "dx" and "dy" to adjust the location of the labels.
 
 ````
 var textlabels = d3.svg.selectAll("text.labels")
@@ -32,34 +88,35 @@ var textlabels = d3.svg.selectAll("text.labels")
 
 ````
 
+See the finished example in [bar_axes_labels_on_data.html](bar_axes_labels_on_data.html).
 
-## More on Dates in D3
+## Responsive Charts in D3 (for Josh Who Keeps Asking)
 
-For scales to work with dates, you need to convert your date strings to Javascript dates.  We do that by using d3.time.format().  We 'parse' the incoming date, and in axes tick labels we may want to use another format to print the date.
+This is not the full story, but here are some good tips.  They rely on you understanding the margin convention.
 
-References:
+* http://eyeseast.github.io/visible-data/2013/08/28/responsive-charts-with-d3/
 
-* D3 docs on time formatting: https://github.com/mbostock/d3/wiki/Time-Formatting
-* Read: http://learnjsdata.com/time.html
-* Watch: Working with Dates in D3, Scott Murray: https://www.youtube.com/watch?v=CQsNxDwO5SA&list=PL0tDk-f4v1ujc8NrGswT158m2y_7bKs3B&index=1
-* Use: http://bl.ocks.org/zanarmstrong/ca0adb7e426c12c06a95
+* More comprehensive: http://blog.webkid.io/responsive-chart-usability-d3/
 
-Example: Date formatting and parsing in [d3_date_parsing.html](d3_date_parsing.html).  Let's work through that.
+* https://www.safaribooksonline.com/blog/2014/02/17/building-responsible-visualizations-d3-js/
+
+You get some mileage out of the attributes for "viewBox" and "preserveAspectRatio" on the SVG container component, but it's not the full solution. Feel free to read more.
 
 
 ##Line Charts (and Time)
 
-Line charts take a special form of data - objects with 2 data points, for the x & y coordinates, as an array.  So the real "work" in line charts is getting your data into shape for this.  That means javascript munging.
+Line charts take a special form of data - objects with 2 data points, for the x & y coordinates, as an array.  So the real "work" in line charts is getting your data into shape for this.  That means javascript data "munging."
 
 Data for a line might look like:
 ````
 [Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object, Object]
-where each one of the objects has 2 attributes:
+
+where each one of the objects has 2 (or more) attributes:
 0: Object
 { emissions: "2880505.507",
-year: "1961" }
+  year: "1961" }
 ````
-These are your x and y coordinates for the line function:
+These are your x and y coordinates for the line function -- where you tell d3 what to use for x and y:
 
 ````
 var line = d3.svg.line()
@@ -71,9 +128,10 @@ var line = d3.svg.line()
                 });
 ````
 
-Examples:
+We can start with a scatterplot over time:  **[emissions_time_scatterplot.html](emissions_time_scatterplot.html)**
 
-* Scatterplot: **[emissions_time_scatterplot.html](emissions_time_scatterplot.html)** -- we're turning this data into a line plot:
+And then turn that data into a lineplot here:
+
 * Lineplot version: **[emissions_lineplot.html](emissions_lineplot.html)**
 
 Now plotting more data, we use g elements for each country (or other "parent", and the values for the line are in another attribute, under "emissions":
@@ -102,7 +160,7 @@ Now plotting more data, we use g elements for each country (or other "parent", a
  ]
 ````
 
-See my example **[multiple_lines.html](multiple_lines.html)**
+See my example: **[multiple_lines.html](multiple_lines.html)**
 
 **Reference:**
 
@@ -112,10 +170,40 @@ See my example **[multiple_lines.html](multiple_lines.html)**
 
 ### Labeling Lines Directly
 
-For reference, multiseries line chart with labelled lines, labels at the end of the line:
+This is a good style for a crowded line chart, especially when it comes to the outliers:
 
-* A reference version by Mike Bostock: http://bl.ocks.org/mbostock/3884955
-* Simpler version: http://bl.ocks.org/d3noob/8603837
+* http://www.nytimes.com/interactive/2016/01/12/upshot/david-bowie-songs-that-fans-are-listening-most-heroes-starman-major-tom.html?_r=1
+
+For reference, multiseries line chart with labelled lines, labels at the end of the line -- follow the tips here.
+
+* A reference version by Mike Bostock: http://bl.ocks.org/mbostock/3884955 [This is more complicated than it has to be because he uses 'datum' to create a simple object for the text label out of the existing data.]
+* Simpler version (be sure to read what he says at the top; your data will not be in reverse order!): http://bl.ocks.org/d3noob/8603837
+
+Also, see this simpler example for labeling a single line using scales instead of the "transform(translate)" method:
+[emissions_lineplot_label.html](emissions_lineplot_label.html).
+
+
+### Things That Are Confusing About Line Charts
+
+* Frequently, for multiple line charts, the line data is in a "g" container.  The data array is attached to the g "parent" node, along with other attributes you might need (for stuff like tooltips).
+* You see `[ data ]` a lot, because the data needs to be passed as an array to the line function.
+* It's a single "mark" (the path) for the array of data -- so for a single line, it's a datum() without a selectAll and enter().  You just append a line element to the parent "g" container.
+
+They will remain a little confusing and different from most of d3.  You might need to come back to this a bit.  But they are incredibly useful chart types, especially with interaction!
+
+
+### Reminder on Dates in D3
+
+For scales to work with dates, you need to convert your date strings to Javascript dates.  We do that by using d3.time.format().  We 'parse' the incoming date, and in axes tick labels we may want to use another format to print the date on the axis.
+
+References:
+
+* D3 docs on time formatting: https://github.com/mbostock/d3/wiki/Time-Formatting
+* Read: http://learnjsdata.com/time.html
+* Watch: Working with Dates in D3, Scott Murray: https://www.youtube.com/watch?v=CQsNxDwO5SA&list=PL0tDk-f4v1ujc8NrGswT158m2y_7bKs3B&index=1
+* Use: http://bl.ocks.org/zanarmstrong/ca0adb7e426c12c06a95
+
+Example in-class-exercise: Date formatting and parsing in [d3_date_parsing.html](d3_date_parsing.html).
 
 
 ## Intro to D3 Mouse Events
@@ -154,15 +242,18 @@ rect.on("click", handle_click);  // notice you call it by name only, no parens!
 See **[multiple_lines_mouseover.html](multiple_lines_mouseover.html).**
 
 
-## D3 Tooltips
+### D3 Tooltips
 
 There are lots of ways to do tooltips in D3 applications. I'm showing you a simple way that uses HTML, which means you can put any content you want in the tooltip.  We just position it with the window.event (or d3.event) location for where the cursor is when the mouse event is fired.
 
 There are 3 crucial pieces:
 
 * The CSS, which establishes how it is positioned ("absolute")
-* the attachment to the body (not to the SVG!),
+* the attachment to the **body** (not to the SVG, or another div),
 * and then the mouseover, which sets position, text, and visibility.
+
+
+**GIANT REMINDER: These D3 tooltips MUST be attached to the document body, not to another div inside it. Positioning won't be right otherwise.**
 
 
 Relevant bits from my file example: [emissions_scatterplot_tooltip.html](emissions_scatterplot_tooltip.html)
@@ -187,10 +278,10 @@ If you forget any of them, you'll have a bug!
 
 Example: **[emissions_scatterplot_tooltip.html](emissions_scatterplot_tooltip.html)**
 
-Here's an alternative using a plugin, d3.tip:  http://labratrevenge.com/d3-tip/.
+Here's an alternative method using a plugin, d3.tip:  http://labratrevenge.com/d3-tip/.
 
 
-### Doing Tooltips on Lines is Sometimes Harder
+### Doing Tooltips on Lines is Sometimes Hard(ish)
 
 One issue with lines and tooltips is that the data is an array, and the element itself is a single entity.  A mouseover on it won't know "where" on the line you are, unless you also add dots (we'll do that next week) or use other tricks to find your location.  We'll do these advanced moves next week.
 
@@ -204,11 +295,10 @@ This example file shows how to use classes using a new d3 method, `d3.classed()`
 
 See **[multiple_lines_mouseover_tooltip.html](multiple_lines_mouseover_tooltip.html)**.  Notice it's kind of hard to target the right line... we'll talk about a method to improve that next week using a voronoi grid.
 
-TODO: Line version with all the data available.
-
 
 ## Loading Multiple Data Files
 
+You may need to use multiple files to get your timeseries data.
 There are a few ways to handle multiple data files.  For now, let's just nest the calls:
 
 ````
@@ -230,18 +320,23 @@ d3.merge([ [1], [2, 3] ]); // returns [1, 2, 3]
 We will use queue() in a few weeks.
 
 
-## Homeworks
+## Homework
 
-**Homework1 Tooltips & Padding (12pt)**: Using the scatterplot you made for Week5, with your own data (from UNICEF data), make real tooltips using the method in emissions_scatterplot_tooltip.html. Remove your title text element from the dots, after you make the real tooltips.  Add some padding the way I showed you above. Send gist as "Week 6: Scatter tooltips."
 
-**Homework2 Multiple Lines (35pt)**: If you don't have it now, download some timeseries data. This means measures of something by year, such as under 5 mortality each year since 1990.  Make sure you get more than one series, but on the same time scale, because we want multiple lines on your chart.  Combine files if you have to in javascript, or combine in Excel/text to make one file with all your data.
+* Video: For calm and friendly explanation of lines in d3, watch the line charts video from Scott Murray: https://www.youtube.com/watch?v=QiNi2aYANUc&list=PL0tDk-f4v1ujc8NrGswT158m2y_7bKs3B&index=2
 
-* Give the lines mouseovers so that they look different when the mouse is over them, using classes and d3.classed.
-* Give them tooltips that identify what each line is.
 
-The hardest part of this might be the data manipulations part.  Please email/see me for help. Send gist and data as "Week 6: My Line Plot."
+**Homework Multiple Lines (40pt)**:
 
-**Homework 3, Labeled Lines**: Label the outlier lines (the ones that are very high) on the line plot in multiple_lines.html, using a technique like in the examples above under "Labeling Lines Directly."  The goal here is to have text on the chart at the end of the line, saying what country it is. You can use the last data point in the line to get the text coordinates.
-Email me the gist with "Week 6: Labeled Lines."
+If you don't have it now, download some timeseries data. This means measures of something by year. Make sure you get more than one series (ideally at least 10), but on the same time scale, because we want multiple lines on your chart.  Combine files if you have to in javascript, or combine in Excel/text to make one file with all your data.
+
+* Give the lines mouseovers so that they look different (bolder, thicker, color change?) when the mouse is over them, using classes and `d3.classed().`  Use a mouseover function.
+* Give them d3 tooltips that identify what each line is, using the code I showed this week(not a plugin from the internet).
+* Label the outlier lines in the right margin (the highest or lowest, ones that are different) using the techniques in "Labeling Lines Directly."  Identify what those lines are with short text.
+* Put a short description and identify the source above your chart.
+
+The hardest part of this might be the data manipulations part. If you have data in the "long" format (a year per row) instead of wide (dates as columns), you might need help with it.  Please email/see me.
+
+Send gist and data as "Week 6: Line Plot."
 
 

@@ -28,14 +28,18 @@
 
 			path.line {
 				fill: none;
+			}
+
+			.unfocused {
 				stroke: gray;
 				stroke-width: 2px;
 				stroke-opacity: 0.8;
 			}
 
 			.focused {
-				stroke: black;
+				stroke: orange;
 				stroke-opacity: 1;
+				stroke-width: 2px
 			}
 
 			.voronoi path {
@@ -62,7 +66,7 @@
 			}
 
 			circle {
-				fill: gray;
+				fill: orange;
 			}
 
 			.tooltip {
@@ -91,20 +95,22 @@
 
 
 			//Dimensions and padding
-			var width = 700;
-			var height = 600;
-			var margin = {top: 20, right: 10, bottom: 40, left:100};
+			var fullwidth = 700;
+			var fullheight = 600;
+			var margin = {top: 20, right: 120, bottom: 40, left:100};
 
+			var width = fullwidth - margin.left - margin.right;
+			var height = fullheight - margin.top - margin.bottom;
 
 			//Set up date formatting and years
 			var dateFormat = d3.time.format("%Y");
 
 			//Set up scales
 			var xScale = d3.time.scale()
-								.range([ margin.left, width - margin.right - margin.left ]);
+								.range([ 0, width ]);
 
 			var yScale = d3.scale.linear()
-								.range([ margin.top, height - margin.bottom ]);
+								.range([0, height ]);
 
 			//Configure axis generators
 			var xAxis = d3.svg.axis()
@@ -123,7 +129,6 @@
 							.outerTickSize([0]);
 
 
-
 			//Configure line generator
 			// each line dataset must have a d.year and a d.amount for this to work.
 			var line = d3.svg.line()
@@ -139,8 +144,10 @@
 			//Create the empty SVG image
 			var svg = d3.select("body")
 						.append("svg")
-						.attr("width", width)
-						.attr("height", height);
+						.attr("width", fullwidth)
+						.attr("height", fullheight)
+						.append("g")
+						.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
 			var tooltip = d3.select("body")
@@ -215,26 +222,33 @@
 
 
 				//Make a group for each country
-				var groups = svg.selectAll("g")
+				var groups = svg.append("g").attr("id", "lines")
+					.selectAll("g")
 					.data(dataset)
 					.enter()
 					.append("g")
-					.attr("class", "country");
+					.attr("class", "country")
+					.attr("id", function(d) {
+						if (d.country) {
+							return d.country.replace(/ |,|\./g, "_");
+						}
+					});
 
 				//Within each group, create a new line/path,
 				//binding just the emissions data to each one
 				groups
 					.append("path")
-					.attr("class", "line")
+					.classed("line", true)
+					.classed("unfocused", true)
 					.attr("d", function(d) {
-						console.log(d, this);
 						d.line = this; // this isn't working for use below because it's the wrong dataset
 						return line(d.emissions);
+					})
+					.attr("id", function(d) {
+						if (d.country) {
+							return d.country.replace(/ |,|\./g, "_");
+						}
 					});
-
-				groups.each(function(d) {
-					console.log(d);
-				})
 
 				// Adding a subtle animation to increase the dot size when over it!
 
@@ -245,7 +259,7 @@
 					.y(function(d) {
 						return yScale(+d.amount);
 					})
-					.clipExtent([[margin.left, margin.top], [width, height]]);
+					.clipExtent([[0, 0], [width, height]]);
 
 				var voronoiGroup = svg.append("g")
 					.attr("class", "voronoi");
@@ -314,12 +328,11 @@
 				//Axes
 				svg.append("g")
 					.attr("class", "x axis")
-					.attr("transform", "translate(0," + (height - margin.bottom) + ")")
+					.attr("transform", "translate(0," + height  + ")")
 					.call(xAxis);
 
 				svg.append("g")
 					.attr("class", "y axis")
-					.attr("transform", "translate(" + margin.left + ",0)")
 					.call(yAxis);
 
 
@@ -332,6 +345,10 @@
 						.html("<p>Country: " + d.country +
 									"<br>Year: " + d.year +
 								  "<br>Emissions: " + d.amount + " kt</p>");
+					var countryId = d.country.replace(/ |,|\./g, "_");
+
+					d3.select("path.line#" + countryId).classed("focused", true).classed("unfocused", false);
+					d3.select("g.country#" + countryId).moveToFront(); // the parent node is g#lines
 					}
 
 				function mousemoveFunc(d) {
@@ -343,13 +360,18 @@
 				function mouseoutFunc(d) {
 					// remove the dot offscreen and the tooltip
 					focus.attr("transform", "translate(-100,-100)");
-					d3.selectAll("path.line").classed("focused", false);
+					d3.selectAll("path.line").classed("focused", false).classed("unfocused", true);
 			    tooltip.style("display", "none");  // this sets it to invisible!
 			  }
 
 			}); // end of data csv
 
 
+		d3.selection.prototype.moveToFront = function() {
+      return this.each(function(){
+        this.parentNode.appendChild(this);
+      });
+    }
 
 		</script>
 

@@ -2,7 +2,7 @@
 <!-- This map code and design were inspired by the tutorial in Flowing Data: http://flowingdata.com/2015/02/19/make-an-interactive-map-with-category-filters/ -->
 <head>
     <title>Stunted Growth By Income Level</title>
-    <link rel="stylesheet" href="world_comparisons.css" type="text/css" media="screen" />
+    <link rel="stylesheet" href="css/world_comparisons.css" type="text/css" media="screen" />
 </head>
 
 <div id="main-wrapper">
@@ -64,9 +64,9 @@
 
 </div><!-- @end #main-wrapper -->
 
-<script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://d3js.org/queue.v1.min.js"></script>
-<script src="http://d3js.org/topojson.v1.min.js"></script>
+<script src="https://d3js.org/d3.v3.min.js"></script>
+<script src="https://d3js.org/queue.v1.min.js"></script>
+<script src="https://d3js.org/topojson.v1.min.js"></script>
 <script>
 
 var width = 1000,
@@ -83,7 +83,7 @@ var baseColors = {
     "differenceLoc": d3.scale.linear().range(["#ffffff", "#b3de69"]).interpolate(d3.interpolateLab)
 };
 
-var countryById = d3.map();
+var countryById = d3.map(); // will have id's as keys for countries; see typeAndSet()
 
 var projection = d3.geo.mercator()
     .scale(200)
@@ -111,7 +111,7 @@ svg.append("rect")
     .attr("height", height);
 
 svg.append("image")
-    .attr("xlink:href", "progress-anim.gif")
+    .attr("xlink:href", "img/progress-anim.gif")
     .attr("id", "progress-image")
     .attr("width", 43)
     .attr("height", 11)
@@ -127,7 +127,7 @@ var tooltip = d3.select("#tooltip")
 var CURR_SELECT = "richest";
 
 queue()
-    .defer(d3.json, "data/countries.json")
+    .defer(d3.json, "data/topojson/countries.json")
     .defer(d3.csv, "data/stunting_by_wealth.csv", typeAndSet)
     .await(ready);
 
@@ -249,6 +249,7 @@ function make_buttons() {
 function mouseover(d){
 
   d3.select(this).classed("selected", true);
+  d3.select(this).moveToFront();
 
   tooltip.transition().duration(100)
    .style("opacity", 1);
@@ -290,7 +291,7 @@ function typeAndSet(d) {
     d.urban = +d.Urban;
     d.rural = +d.Rural;
     d.differenceLoc = d.Rural - d.Urban;
-    countryById.set(d.ISO, d);
+    countryById.set(d.ISO, d); // this is a d3.map, being given a key, value pair.
     return d;
 }
 
@@ -313,6 +314,12 @@ function colorByCurrent(FIPS) {
     }
 
 }
+
+d3.selection.prototype.moveToFront = function() {
+  return this.each(function(){
+    this.parentNode.appendChild(this);
+  });
+};
 
 function zoomIn() {
     zoom.scale(zoom.scale()*2);
